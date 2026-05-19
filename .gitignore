@@ -1,0 +1,45 @@
+# ── Virtual Environment ──
+venv/
+env/
+.env
+*.env
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Database ──
+*.db
+*.sqlite3
+
+# ── ML Model Artifacts ──
+ml_model/training_results_*.json
+
+# ── Jupyter ──
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# ── OS files ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE / Editor ──
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ── Logs ──
+*.log
+logs/
+
+# ── Misc ──
+*.mp4

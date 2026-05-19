@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prediction Result | Diabetes Risk Predictor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(135deg, #1b4f72, #2e86c1, #1a8a7a);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+      font-family: "Poppins", sans-serif;
+    }
+
+    .result-wrapper {
+      width: 100%;
+      max-width: 780px;
+    }
+
+    .result-card {
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.22);
+      overflow: hidden;
+      animation: fadeIn 0.7s ease-in-out;
+    }
+
+    /* ── Header ── */
+    .result-header {
+      background: linear-gradient(135deg, #1b4f72, #2e86c1);
+      color: white;
+      padding: 28px 36px 22px;
+      text-align: center;
+    }
+    .result-header h2 { font-size: 1.7rem; font-weight: 700; margin-bottom: 4px; }
+    .result-header p  { opacity: .8; font-size: .9rem; margin: 0; }
+
+    /* ── Risk Banner ── */
+    .risk-banner {
+      padding: 28px 36px;
+      text-align: center;
+    }
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 36px;
+      border-radius: 50px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: white;
+    }
+    .risk-badge.high { background: linear-gradient(135deg, #c0392b, #96281b); box-shadow: 0 6px 20px rgba(192,57,43,.35); }
+    .risk-badge.low  { background: linear-gradient(135deg, #1a7a5e, #2d9d7e); box-shadow: 0 6px 20px rgba(29,140,110,.35); }
+
+    /* ── Probability bars ── */
+    .prob-section {
+      padding: 0 36px 28px;
+    }
+    .prob-label {
+      font-size: .85rem;
+      font-weight: 600;
+      color: #4a6880;
+      margin-bottom: 4px;
+    }
+    .prob-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .prob-value.safe   { color: #1a7a5e; }
+    .prob-value.danger { color: #c0392b; }
+    .progress { height: 12px; border-radius: 10px; background: #e9f2fb; }
+    .progress-bar.safe-bar   { background: linear-gradient(90deg, #1a7a5e, #2d9d7e); }
+    .progress-bar.danger-bar { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+
+    /* ── Details Table ── */
+    .details-section {
+      padding: 0 36px 28px;
+    }
+    .details-section h6 {
+      color: #1b4f72;
+      font-weight: 700;
+      border-bottom: 2px solid #d6e4f0;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .detail-item {
+      background: #f4f9fd;
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .detail-item .d-label { font-size: .8rem; color: #6b8fa8; }
+    .detail-item .d-value { font-weight: 700; color: #1b4f72; }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      margin: 0 36px 24px;
+      background: #fff8e1;
+      border-left: 4px solid #f0a500;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: .82rem;
+      color: #7a5c00;
+    }
+
+    /* ── Action Buttons ── */
+    .action-bar {
+      padding: 16px 36px 30px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-back {
+      background: #f4f9fd;
+      color: #1b4f72;
+      border: 2px solid #d6e4f0;
+      border-radius: 12px;
+      padding: 10px 24px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: .2s;
+    }
+    .btn-back:hover { background: #d6e4f0; color: #1b4f72; }
+
+    .btn-pdf {
+      background: linear-gradient(45deg, #c0392b, #e74c3c);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 24px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .btn-pdf:hover { opacity: .9; transform: scale(1.03); }
+
+/* ── Timestamp ── */
+    .timestamp {
+      text-align: center;
+      font-size: .78rem;
+      color: #a0b4c2;
+      padding-bottom: 6px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Comparison Section ── */
+    .compare-section {
+      padding: 0 36px 28px;
+    }
+    .compare-section h6 {
+      color: #1b4f72;
+      font-weight: 700;
+      border-bottom: 2px solid #d6e4f0;
+      padding-bottom: 8px;
+      margin-bottom: 6px;
+    }
+    .compare-sub {
+      font-size: .78rem;
+      color: #7a9bb5;
+      margin-bottom: 14px;
+    }
+    .compare-grid {
+      display: flex;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #d6e4f0;
+    }
+    .compare-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .compare-cell {
+      padding: 9px 12px;
+      font-size: .83rem;
+      border-bottom: 1px solid #e8f2fb;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .compare-col:not(:last-child) .compare-cell {
+      border-right: 1px solid #d6e4f0;
+    }
+    .header-col .compare-cell { font-weight: 600; color: #4a6880; background: #f4f9fd; }
+    .col-header { background: #1b4f72 !important; color: white !important; font-weight: 700; justify-content: center; }
+    .prev-col .compare-cell  { background: #f9fbfd; color: #5a7a90; }
+    .curr-col .compare-cell  { background: #fff; color: #1b2f3e; }
+    .curr-col .compare-cell.changed { background: #eaf5ff; font-weight: 600; }
+    .prev-col .compare-cell.changed { background: #fdf4e7; }
+    .risk-high { color: #c0392b !important; font-weight: 700; }
+    .risk-low  { color: #1a7a5e !important; font-weight: 700; }
+    .delta { font-size: .7rem; }
+    .delta.up   { color: #c0392b; }
+    .delta.down { color: #1a7a5e; }
+    .compare-note {
+      font-size: .75rem;
+      color: #8aacbf;
+      margin-top: 8px;
+      margin-bottom: 0;
+    }
+
+    /* ── Print / PDF styles ── */
+    @media print {
+      body { background: white !important; padding: 0; }
+      .action-bar, .btn-back, .btn-pdf, .btn-csv { display: none !important; }
+      .result-card { box-shadow: none; border: 1px solid #ddd; }
+      .result-wrapper { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="result-wrapper px-3">
+  <div class="result-card">
+
+    <!-- Header -->
+    <div class="result-header">
+      <h2><i class="fas fa-heartbeat"></i> Diabetes Risk Assessment Report</h2>
+      <p>Generated on {{ result.timestamp }}</p>
+    </div>
+
+    <!-- Risk Banner -->
+    <div class="risk-banner">
+      <div class="risk-badge {{ 'high' if result.prediction == 1 else 'low' }}">
+        <i class="fas {{ 'fa-exclamation-triangle' if result.prediction == 1 else 'fa-check-circle' }}"></i>
+        {{ 'High Diabetes Risk' if result.prediction == 1 else 'Low Diabetes Risk' }}
+      </div>
+    </div>
+
+    <!-- Probability Bars -->
+    <div class="prob-section">
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="prob-label"><i class="fas fa-shield-alt text-success me-1"></i> No Diabetes Probability</div>
+          <div class="prob-value safe">{{ result.probability_no_diabetes }}%</div>
+          <div class="progress mt-2">
+            <div class="progress-bar safe-bar" style="width: {{ result.probability_no_diabetes }}%"></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="prob-label"><i class="fas fa-exclamation-circle text-danger me-1"></i> Diabetes Risk Probability</div>
+          <div class="prob-value danger">{{ result.probability_diabetes }}%</div>
+          <div class="progress mt-2">
+            <div class="progress-bar danger-bar" style="width: {{ result.probability_diabetes }}%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Details -->
+    {% set labels = {
+      'Pregnancies': 'Pregnancies',
+      'Glucose': 'Glucose (mg/dL)',
+      'BloodPressure': 'Blood Pressure (mmHg)',
+      'SkinThickness': 'Skin Thickness (mm)',
+      'Insulin': 'Insulin (μU/mL)',
+      'BMI': 'BMI (kg/m²)',
+      'DiabetesPedigreeFunction': 'Diabetes Pedigree',
+      'Age': 'Age (years)'
+    } %}
+    <div class="details-section">
+      <h6><i class="fas fa-clipboard-list me-2"></i>Health Metrics Submitted</h6>
+      <div class="detail-grid">
+        {% for name, value in result.features %}
+        <div class="detail-item">
+          <span class="d-label">{{ labels[name] if name in labels else name }}</span>
+          <span class="d-value">{{ value }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ── Comparison Section (only when a previous result exists) ── -->
+    {% if previous %}
+    <div class="compare-section">
+      <h6><i class="fas fa-balance-scale me-2"></i>Comparison with Previous Assessment</h6>
+      <p class="compare-sub">{{ previous.timestamp }} vs {{ result.timestamp }}</p>
+
+      {% set prev_map = {} %}
+      {% for n, v in previous.features %}{% set _ = prev_map.update({n: v}) %}{% endfor %}
+
+      <div class="compare-grid">
+        <!-- Labels column -->
+        <div class="compare-col header-col">
+          <div class="compare-cell label-cell">Metric</div>
+          <div class="compare-cell label-cell">Result</div>
+          <div class="compare-cell label-cell">No Diabetes %</div>
+          <div class="compare-cell label-cell">Diabetes Risk %</div>
+          {% for name, _ in result.features %}
+          <div class="compare-cell label-cell">{{ labels[name] if name in labels else name }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Previous column -->
+        <div class="compare-col prev-col">
+          <div class="compare-cell col-header">Previous</div>
+          <div class="compare-cell {{ 'risk-high' if previous.prediction == 1 else 'risk-low' }}">
+            {{ 'High Risk' if previous.prediction == 1 else 'Low Risk' }}
+          </div>
+          <div class="compare-cell">{{ previous.probability_no_diabetes }}%</div>
+          <div class="compare-cell">{{ previous.probability_diabetes }}%</div>
+          {% for name, curr_val in result.features %}
+          {% set prev_val = prev_map[name] if name in prev_map else curr_val %}
+          <div class="compare-cell {{ 'changed' if prev_val != curr_val else '' }}">
+            {{ prev_val }}
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Current column -->
+        <div class="compare-col curr-col">
+          <div class="compare-cell col-header">Current</div>
+          <div class="compare-cell {{ 'risk-high' if result.prediction == 1 else 'risk-low' }}">
+            {{ 'High Risk' if result.prediction == 1 else 'Low Risk' }}
+          </div>
+          <div class="compare-cell">{{ result.probability_no_diabetes }}%</div>
+          <div class="compare-cell">{{ result.probability_diabetes }}%</div>
+          {% for name, curr_val in result.features %}
+          {% set prev_val = prev_map[name] if name in prev_map else curr_val %}
+          <div class="compare-cell {{ 'changed' if curr_val != prev_val else '' }}">
+            {{ curr_val }}
+            {% if curr_val != prev_val %}
+              {% if curr_val > prev_val %}
+                <span class="delta up"><i class="fas fa-arrow-up"></i></span>
+              {% else %}
+                <span class="delta down"><i class="fas fa-arrow-down"></i></span>
+              {% endif %}
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <p class="compare-note"><i class="fas fa-circle-dot me-1"></i>Highlighted cells indicate values that changed between assessments.</p>
+    </div>
+    {% endif %}
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <i class="fas fa-info-circle me-1"></i>
+      <strong>Disclaimer:</strong> This prediction is generated by a machine learning model and is
+      <strong>not a medical diagnosis</strong>. Please consult a qualified healthcare professional
+      for personalised medical advice.
+    </div>
+
+    <!-- Timestamp -->
+    <div class="timestamp">Report ID: DRP-{{ result.timestamp | replace(" ", "") | replace(",", "") }}</div>
+
+    <!-- Action Buttons -->
+    <div class="action-bar">
+      <a href="/index" class="btn-back"><i class="fas fa-arrow-left me-1"></i> New Assessment</a>
+      <button class="btn-pdf" onclick="downloadPDF()"><i class="fas fa-file-pdf me-1"></i> Download PDF</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function downloadPDF() {
+    window.print();
+  }
+</script>
+</body>
+</html>

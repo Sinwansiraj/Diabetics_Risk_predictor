@@ -1,0 +1,185 @@
+# Diabetes Risk Predictor
+
+A full-stack web application that predicts diabetes risk using a trained Random Forest model. Users log in, enter their health metrics, and receive a detailed risk report with probability scores, downloadable PDF output, and side-by-side comparison of their last two assessments.
+
+**Author:** Mohammed Sinwan  
+**Stack:** Python · Flask · scikit-learn · SQLite · Bootstrap 5  
+
+---
+
+## Features
+
+- **User authentication** — signup, login, and logout with hashed passwords
+- **Gender-aware form** — Pregnancies field is hidden automatically for male users
+- **ML prediction** — Random Forest classifier trained on the Pima Indians Diabetes Dataset (77.9% accuracy)
+- **Dedicated result page** — probability bars, full metric breakdown, and medical disclaimer
+- **Assessment comparison** — last two results shown side by side with change indicators (↑ ↓)
+- **PDF download** — print-optimised layout via browser print dialog
+- **REST API** — JSON endpoints for single and batch predictions
+- **Vercel-ready** — `api/index.py` entry point and `vercel.json` included
+
+---
+
+## Project Structure
+
+```
+diabetes_risk_predictor/
+├── api/
+│   └── index.py              # Vercel entry point
+├── data/
+│   └── diabetes.csv          # Pima Indians dataset
+├── ml_model/
+│   ├── train_model.py        # Training script
+│   ├── diabetes_model.pkl    # Trained RandomForest model
+│   ├── scaler.pkl            # StandardScaler
+│   └── feature_names.json   # Feature list
+├── webapp/
+│   ├── app.py                # Flask application
+│   ├── database.py           # DB initialisation helper
+│   └── templates/
+│       ├── login.html
+│       ├── signup.html
+│       ├── index.html        # Prediction form
+│       └── result.html       # Result + comparison page
+├── .env                      # SECRET_KEY (not committed)
+├── .gitignore
+├── Procfile                  # gunicorn command for Linux hosting
+├── requirements.txt
+└── vercel.json
+```
+
+---
+
+## Getting Started
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/Sinwansiraj/Diabetics_Risk_predictor.git
+cd Diabetics_Risk_predictor
+```
+
+### 2. Create and activate a virtual environment
+
+```bash
+# Windows
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# macOS / Linux
+python -m venv venv
+source venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Set up the environment file
+
+Create a `.env` file in the project root:
+
+```
+SECRET_KEY=your-secret-key-here
+```
+
+### 5. Run the app
+
+```bash
+# Windows (venv activated)
+python webapp/app.py
+
+# macOS / Linux (production-style)
+gunicorn webapp.app:app --workers 2 --threads 2 --timeout 120
+```
+
+Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+
+---
+
+## Health Parameters
+
+| Parameter | Description | Range |
+|-----------|-------------|-------|
+| Pregnancies | Number of pregnancies | 0 – 20 |
+| Glucose | Blood glucose level (mg/dL) | 0 – 300 |
+| Blood Pressure | Diastolic blood pressure (mmHg) | 0 – 200 |
+| Skin Thickness | Triceps skinfold thickness (mm) | 0 – 100 |
+| Insulin | 2-hour serum insulin (μU/mL) | 0 – 1000 |
+| BMI | Body Mass Index (kg/m²) | 0 – 100 |
+| Diabetes Pedigree | Family history factor | 0 – 3 |
+| Age | Age in years | 1 – 120 |
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Health check |
+| `GET` | `/model-info` | Model metadata |
+| `POST` | `/predict` | Web form prediction (redirects to result page) |
+| `POST` | `/api/predict` | JSON single prediction |
+| `POST` | `/predict-batch` | JSON batch predictions |
+
+### Example — single prediction
+
+```bash
+curl -X POST http://localhost:5000/api/predict \
+  -H "Content-Type: application/json" \
+  -d '{"Pregnancies":1,"Glucose":85,"BloodPressure":66,"SkinThickness":29,"Insulin":0,"BMI":26.6,"DiabetesPedigreeFunction":0.351,"Age":31}'
+```
+
+```json
+{
+  "prediction": 0,
+  "probability_diabetes": 0.09,
+  "status": "success"
+}
+```
+
+---
+
+## Model
+
+- **Algorithm:** Random Forest Classifier (100 estimators)
+- **Dataset:** Pima Indians Diabetes Dataset (768 samples, 8 features)
+- **Preprocessing:** Zero-value imputation with column medians, StandardScaler normalisation
+- **Test accuracy:** 77.92%
+
+To retrain the model:
+
+```bash
+cd ml_model
+python train_model.py
+```
+
+---
+
+## Deployment
+
+### Vercel
+
+Push to GitHub and import the repo into Vercel. The `vercel.json` and `api/index.py` are already configured.
+
+> **Note:** Vercel uses an ephemeral filesystem, so the SQLite `users.db` will not persist between deployments. For production use, replace SQLite with a hosted database such as Supabase or PlanetScale.
+
+### Heroku / Render (Linux)
+
+The included `Procfile` runs the app with gunicorn:
+
+```
+gunicorn webapp.app:app --workers 2 --threads 2 --timeout 120
+```
+
+---
+
+## Disclaimer
+
+This application is built for educational and demonstration purposes. Predictions are generated by a machine learning model and **do not constitute medical advice**. Always consult a qualified healthcare professional for personalised guidance.
+
+---
+
+*Developed by Mohammed Sinwan — 2026*
