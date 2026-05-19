@@ -18,10 +18,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY")
+app.secret_key = os.environ.get("SECRET_KEY", "fallback-dev-key-change-in-production")
 
-# Absolute path to the database, always relative to this file
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "users.db")
+# On Vercel only /tmp is writable; locally use the project root
+if os.environ.get("VERCEL"):
+    DB_PATH = "/tmp/users.db"
+else:
+    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "users.db")
 
 
 # --------------------------------------------------
